@@ -1,0 +1,27 @@
+searches:
+  # Domain expertise (highest value)
+  - terms: ["billing", "invoicing", "subscription"]
+    category: "Web Development"
+  - terms: ["e-commerce", "marketplace", "payments"]
+    category: "Web Development"
+  - terms: ["CMS", "content management"]
+    category: "Web Development"
+
+  # Core stack
+  - terms: ["React", "TypeScript", "senior"]
+    category: "Web Development"
+  - terms: ["Ruby", "Rails", "full-stack"]
+    category: "Web Development"
+  - terms: ["Node.js", "backend", "API"]
+    category: "Web Development"
+
+  # AI/ML
+  - terms: ["AI", "LLM", "machine learning"]
+    category: "Web Development"
+
+filters:
+  experienceLevel: "EXPERT"
+  hourlyBudgetMin: 50
+  jobType: ["HOURLY", "FIXED"]
+  clientHiresCount_gte: 1
+  postedWithin: "24h"
