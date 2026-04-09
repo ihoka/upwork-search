@@ -1,7 +1,6 @@
 import { SEARCH_JOBS_QUERY, buildQueryVariables } from "./queries.ts";
 import type {
   UpworkJobPosting,
-  MarketplaceJobPostingsResponse,
   SearchConfig,
   SearchFilters,
 } from "../types.ts";
@@ -34,8 +33,20 @@ export class UpworkSearchClient {
         throw new Error(`Upwork API error (${response.status}): ${text}`);
       }
 
-      const data: MarketplaceJobPostingsResponse = await response.json();
-      const { edges, pageInfo } = data.data.marketplaceJobPostings;
+      const json = await response.json();
+
+      if (json.errors?.length) {
+        const messages = json.errors.map((e: { message: string }) => e.message).join("; ");
+        throw new Error(`Upwork GraphQL error: ${messages}`);
+      }
+
+      if (!json.data?.marketplaceJobPostings) {
+        throw new Error(
+          `Upwork API returned unexpected response: ${JSON.stringify(json).slice(0, 500)}`,
+        );
+      }
+
+      const { edges, pageInfo } = json.data.marketplaceJobPostings;
 
       for (const edge of edges) {
         allJobs.push(edge.node);

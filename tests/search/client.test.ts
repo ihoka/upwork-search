@@ -113,6 +113,41 @@ describe("UpworkSearchClient", () => {
     await expect(client.fetchJobs(search, testFilters)).rejects.toThrow("500");
   });
 
+  test("fetchJobs throws on GraphQL errors in 200 response", async () => {
+    const errorResponse = {
+      errors: [{ message: "Rate limit exceeded" }],
+      data: null,
+    };
+    globalThis.fetch = mock(() =>
+      Promise.resolve(new Response(JSON.stringify(errorResponse), { status: 200 })),
+    );
+
+    const client = new UpworkSearchClient("https://api.example.com/graphql", "token-123");
+    const search: SearchConfig = { terms: ["React"], category: "Web Development" };
+    await expect(client.fetchJobs(search, testFilters)).rejects.toThrow("GraphQL error");
+  });
+
+  test("fetchJobs stops at max 2 pages even when more available", async () => {
+    let callCount = 0;
+    globalThis.fetch = mock(() => {
+      callCount++;
+      const job = makeJobNode({ id: String(callCount), ciphertext: `~0${callCount}` });
+      return Promise.resolve(
+        new Response(
+          JSON.stringify(makeApiResponse([job], true, `cursor${callCount}`)),
+          { status: 200 },
+        ),
+      );
+    });
+
+    const client = new UpworkSearchClient("https://api.example.com/graphql", "token-123");
+    const search: SearchConfig = { terms: ["React"], category: "Web Development" };
+    const jobs = await client.fetchJobs(search, testFilters);
+
+    expect(callCount).toBe(2);
+    expect(jobs).toHaveLength(2);
+  });
+
   test("filterJobs removes jobs below budget minimum", () => {
     const cheapJob = makeJobNode({ hourlyBudgetMax: 30 });
     const goodJob = makeJobNode({ hourlyBudgetMax: 80 });

@@ -57,6 +57,7 @@ describe("jobToMarkdown", () => {
   test("includes workload, duration, experience level", () => {
     const md = jobToMarkdown(sampleJob);
     expect(md).toContain("30+ hrs/week");
+    expect(md).toContain("Workload");
     expect(md).toContain("1 to 3 months");
     expect(md).toContain("Expert");
   });

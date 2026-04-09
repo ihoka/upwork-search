@@ -8,14 +8,23 @@ export class DeduplicationState {
   constructor(private readonly filePath: string) {}
 
   async load(): Promise<void> {
-    try {
-      const file = Bun.file(this.filePath);
-      if (await file.exists()) {
-        this.jobs = await file.json();
-      }
-    } catch {
-      // Corrupted file — start fresh
+    const file = Bun.file(this.filePath);
+    if (!(await file.exists())) {
       this.jobs = {};
+      return;
+    }
+
+    try {
+      this.jobs = await file.json();
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        console.error(
+          `Corrupted dedup state at ${this.filePath}, starting fresh. Previously seen jobs will be re-saved.`,
+        );
+        this.jobs = {};
+      } else {
+        throw error;
+      }
     }
   }
 

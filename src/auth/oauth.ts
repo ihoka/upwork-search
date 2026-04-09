@@ -54,6 +54,11 @@ export class TokenManager {
     }
 
     const data = await response.json();
+    if (!data.access_token || !data.refresh_token || !data.expires_in) {
+      throw new Error(
+        `Token refresh returned incomplete data. Keys: ${Object.keys(data).join(", ")}`,
+      );
+    }
     const tokens: TokenStore = {
       accessToken: data.access_token,
       refreshToken: data.refresh_token,

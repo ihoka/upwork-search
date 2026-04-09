@@ -51,7 +51,7 @@ upwork_url: "${url}"
 ${job.description}
 
 - **${job.workload ?? "not available"}**
-    ${budgetLabel}
+    Workload
 - **${job.duration ?? "not available"}**
     Duration
 - **${job.experienceLevel ?? "not available"}**

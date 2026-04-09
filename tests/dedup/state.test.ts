@@ -76,4 +76,12 @@ describe("DeduplicationState", () => {
     // Should start fresh rather than crash
     expect(state.hasSeen("anything")).toBe(false);
   });
+
+  test("load only catches JSON parse errors, not other errors", async () => {
+    // Corrupted JSON → recovers silently
+    await Bun.write(statePath, "{bad json");
+    const state = new DeduplicationState(statePath);
+    await state.load();
+    expect(state.hasSeen("anything")).toBe(false);
+  });
 });

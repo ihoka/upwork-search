@@ -26,17 +26,13 @@ export interface RunResult {
 export async function runSearchCycle(options: RunOptions): Promise<RunResult> {
   const { accessToken, apiBaseUrl, outputDir, seenJobsPath, searchProfilePath } = options;
 
-  // Load search profile
   const profile = await loadSearchProfile(searchProfilePath);
 
-  // Load dedup state
   const dedup = new DeduplicationState(seenJobsPath);
   await dedup.load();
 
-  // Create search client
   const client = new UpworkSearchClient(apiBaseUrl, accessToken);
 
-  // Ensure output directory exists
   await mkdir(outputDir, { recursive: true });
 
   let totalFetched = 0;
@@ -44,26 +40,30 @@ export async function runSearchCycle(options: RunOptions): Promise<RunResult> {
   let skippedDuplicates = 0;
   let skippedFiltered = 0;
 
-  // Run all searches
   const allJobs = new Map<string, UpworkJobPosting>();
 
   for (const search of profile.searches) {
-    const jobs = await client.fetchJobs(search, profile.filters);
-    totalFetched += jobs.length;
+    try {
+      const jobs = await client.fetchJobs(search, profile.filters);
+      totalFetched += jobs.length;
 
-    // Client-side filter
-    const filtered = client.filterJobs(jobs, profile.filters);
-    skippedFiltered += jobs.length - filtered.length;
+      const filtered = client.filterJobs(jobs, profile.filters);
+      skippedFiltered += jobs.length - filtered.length;
 
-    // Deduplicate within this run (same job can match multiple searches)
-    for (const job of filtered) {
-      if (!allJobs.has(job.ciphertext)) {
-        allJobs.set(job.ciphertext, job);
+      // Deduplicate within this run (same job can match multiple searches)
+      for (const job of filtered) {
+        if (!allJobs.has(job.ciphertext)) {
+          allJobs.set(job.ciphertext, job);
+        }
       }
+    } catch (error) {
+      console.error(
+        `Search failed for [${search.terms.join(", ")}]:`,
+        error instanceof Error ? error.message : error,
+      );
     }
   }
 
-  // Write new jobs
   for (const [jobId, job] of allJobs) {
     if (dedup.hasSeen(jobId)) {
       skippedDuplicates++;
@@ -79,7 +79,6 @@ export async function runSearchCycle(options: RunOptions): Promise<RunResult> {
     saved++;
   }
 
-  // Prune old entries and persist state
   dedup.prune(30);
   await dedup.save();
 
