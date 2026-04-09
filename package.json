@@ -1,0 +1,17 @@
+{
+  "name": "upwork-search",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "search": "bun run src/main.ts",
+    "setup": "bun run src/auth/setup.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "yaml": "^2.7.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
