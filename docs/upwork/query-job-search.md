@@ -12,7 +12,7 @@ Use **`marketplaceJobPostingsSearch`**. The older `marketplaceJobPostings` query
 
 | Name | Type | Notes |
 |---|---|---|
-| `marketPlaceJobFilter` | [`MarketplaceJobPostingsSearchFilter`](./filter-input.md) | Accepts the same shape as `MarketplaceJobFilter`; use `searchExpression_eq`, `experienceLevel_eq`, `daysPosted_eq`, `clientHiresRange_eq`, `pagination_eq`, etc. Note the quirky mixed-case argument name (`marketPlaceJobFilter`) — that's Upwork's spelling. |
+| `marketPlaceJobFilter` | [`MarketplaceJobPostingsSearchFilter`](./filter-input.md) | Use `searchExpression_eq`, `experienceLevel_eq`, `clientHiresRange_eq`, `pagination_eq`, etc. Note the quirky mixed-case argument name (`marketPlaceJobFilter`) — that's Upwork's spelling. The filter has **no** posted-within field; filter by recency client-side against `publishedDateTime`. |
 | `searchType` | `MarketplaceJobPostingSearchType` | Always pass `USER_JOBS_SEARCH`. Per the docs: "searchType value will be ignored and always set to USER_JOBS_SEARCH". |
 | `sortAttributes` | `[MarketplaceJobPostingSearchSortAttribute]` | List of `{ field: <enum> }`. No `sortOrder` — sort direction is implicit per field. |
 
@@ -49,7 +49,6 @@ query marketplaceJobPostingsSearch(
   "marketPlaceJobFilter": {
     "searchExpression_eq": "React TypeScript senior",
     "experienceLevel_eq": "EXPERT",
-    "daysPosted_eq": 1,
     "clientHiresRange_eq": { "rangeStart": 1 },
     "pagination_eq": { "first": 50 }
   },

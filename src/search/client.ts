@@ -81,7 +81,17 @@ export class UpworkSearchClient {
   }
 
   filterJobs(jobs: UpworkJobPosting[], filters: SearchFilters): UpworkJobPosting[] {
+    // Upwork's MarketplaceJobPostingsSearchFilter has no posted-within field, so
+    // apply recency filtering client-side against publishedDateTime.
+    const cutoffMs =
+      filters.daysPosted > 0 ? Date.now() - filters.daysPosted * 24 * 60 * 60 * 1000 : null;
+
     return jobs.filter((job) => {
+      if (cutoffMs != null) {
+        const publishedMs = Date.parse(job.publishedDateTime);
+        if (Number.isFinite(publishedMs) && publishedMs < cutoffMs) return false;
+      }
+
       // Only hourly jobs have an hourly budget. Fixed-price jobs pass through.
       const rawMax = job.hourlyBudgetMax?.rawValue;
       if (rawMax != null) {

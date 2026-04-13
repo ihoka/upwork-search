@@ -10,7 +10,7 @@ function makeJobNode(overrides: Partial<UpworkJobPosting> = {}): UpworkJobPostin
     ciphertext: "~01abc123",
     title: "Senior React Developer",
     description: "Build amazing things.",
-    publishedDateTime: "2026-04-09T14:30:00Z",
+    publishedDateTime: new Date().toISOString(),
     experienceLevel: "EXPERT",
     duration: "MONTH",
     engagement: "30+ hrs/week",

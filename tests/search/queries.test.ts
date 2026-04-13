@@ -16,7 +16,9 @@ test("buildQueryVariables produces real-schema filter inputs", () => {
   const vars = buildQueryVariables(search, filters);
   expect(vars.marketPlaceJobFilter.searchExpression_eq).toBe("React TypeScript");
   expect(vars.marketPlaceJobFilter.experienceLevel_eq).toBe("EXPERT");
-  expect(vars.marketPlaceJobFilter.daysPosted_eq).toBe(1);
+  // daysPosted is filtered client-side — no posted-within field exists on
+  // MarketplaceJobPostingsSearchFilter, so it must not be sent to the API.
+  expect(vars.marketPlaceJobFilter.daysPosted_eq).toBeUndefined();
   expect(vars.marketPlaceJobFilter.clientHiresRange_eq).toEqual({ rangeStart: 1 });
   expect(vars.marketPlaceJobFilter.pagination_eq).toEqual({ first: 50 });
   expect(vars.searchType).toBe("USER_JOBS_SEARCH");

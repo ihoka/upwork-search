@@ -58,7 +58,6 @@ export function buildQueryVariables(
   const marketPlaceJobFilter: Record<string, unknown> = {
     searchExpression_eq: search.terms.join(" "),
     experienceLevel_eq: filters.experienceLevel,
-    daysPosted_eq: filters.daysPosted,
     pagination_eq: cursor ? { first: PAGE_SIZE, after: cursor } : { first: PAGE_SIZE },
   };
 
