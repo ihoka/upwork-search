@@ -5,8 +5,6 @@ import type {
   SearchFilters,
 } from "../types.ts";
 
-const MAX_PAGES = 2;
-
 /**
  * Summarize an error response body for logging. Upwork's error pages can be
  * multi-KB HTML blobs — not useful in logs. With DEBUG=1, return the full body.
@@ -35,49 +33,59 @@ export class UpworkSearchClient {
   ) {}
 
   async fetchJobs(search: SearchConfig, filters: SearchFilters): Promise<UpworkJobPosting[]> {
-    const allJobs: UpworkJobPosting[] = [];
-    let cursor: string | undefined;
+    // Upwork's `pagination_eq` input crashes the resolver (confirmed via
+    // `bun run search:debug`), so we only fetch the default first page
+    // (~10 edges sorted by RECENCY). Dedup across runs compensates.
+    const variables = buildQueryVariables(search, filters);
+    const response = await fetch(this.apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+      body: JSON.stringify({ query: SEARCH_JOBS_QUERY, variables }),
+    });
 
-    for (let page = 0; page < MAX_PAGES; page++) {
-      const variables = buildQueryVariables(search, filters, cursor);
-      const response = await fetch(this.apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-        body: JSON.stringify({ query: SEARCH_JOBS_QUERY, variables }),
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Upwork API error (${response.status}): ${summarizeBody(text)}`);
-      }
-
-      const json = await response.json();
-
-      if (json.errors?.length) {
-        const messages = json.errors.map((e: { message: string }) => e.message).join("; ");
-        throw new Error(`Upwork GraphQL error: ${messages}`);
-      }
-
-      if (!json.data?.marketplaceJobPostingsSearch) {
-        throw new Error(
-          `Upwork API returned unexpected response: ${summarizeBody(JSON.stringify(json))}`,
-        );
-      }
-
-      const { edges, pageInfo } = json.data.marketplaceJobPostingsSearch;
-
-      for (const edge of edges) {
-        allJobs.push(edge.node);
-      }
-
-      if (!pageInfo.hasNextPage || !pageInfo.endCursor) break;
-      cursor = pageInfo.endCursor;
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Upwork API error (${response.status}): ${summarizeBody(text)}`);
     }
 
-    return allJobs;
+    const json = await response.json();
+
+    if (json.errors?.length) {
+      // Upwork's error messages are often unhelpfully terse ("Exception occurred").
+      // The useful details live in `extensions`, `path`, and `locations` — include
+      // them so logs point at the actual problem. Full payload is available with
+      // DEBUG=1 (logged alongside the request variables for correlation).
+      const formatted = json.errors
+        .map((e: Record<string, unknown>) => {
+          const parts: string[] = [String(e.message ?? "(no message)")];
+          if (Array.isArray(e.path) && e.path.length) parts.push(`path=${e.path.join(".")}`);
+          if (Array.isArray(e.locations) && e.locations.length) {
+            parts.push(`locations=${JSON.stringify(e.locations)}`);
+          }
+          if (e.extensions) parts.push(`extensions=${JSON.stringify(e.extensions)}`);
+          return parts.join(" ");
+        })
+        .join(" | ");
+
+      if (process.env.DEBUG === "1") {
+        console.error("[upwork] GraphQL request variables:", JSON.stringify(variables));
+        console.error("[upwork] GraphQL full error payload:", JSON.stringify(json.errors));
+      }
+
+      throw new Error(`Upwork GraphQL error: ${formatted}`);
+    }
+
+    if (!json.data?.marketplaceJobPostingsSearch) {
+      throw new Error(
+        `Upwork API returned unexpected response: ${summarizeBody(JSON.stringify(json))}`,
+      );
+    }
+
+    const { edges } = json.data.marketplaceJobPostingsSearch;
+    return edges.map((edge: { node: UpworkJobPosting }) => edge.node);
   }
 
   filterJobs(jobs: UpworkJobPosting[], filters: SearchFilters): UpworkJobPosting[] {

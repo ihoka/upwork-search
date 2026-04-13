@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "search": "bun run src/main.ts",
+    "search:debug": "bun run src/search/debug.ts",
     "setup": "bun run src/auth/setup.ts",
     "test": "bun test"
   },

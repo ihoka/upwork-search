@@ -48,17 +48,18 @@ export interface QueryVariables {
   sortAttributes: { field: "RECENCY" | "RELEVANCE" | "CLIENT_TOTAL_CHARGE" | "CLIENT_RATING" }[];
 }
 
-const PAGE_SIZE = 50;
-
 export function buildQueryVariables(
   search: SearchConfig,
   filters: SearchFilters,
-  cursor?: string,
 ): QueryVariables {
+  // NOTE: We deliberately do NOT send `pagination_eq`. Upwork's resolver
+  // throws a 500 "Exception occurred" whenever the filter contains
+  // `pagination_eq` — confirmed via `bun run search:debug`. Omitting it
+  // returns a default page of ~10 edges sorted by RECENCY, which is enough
+  // for this project given we run every 6 hours and dedup across runs.
   const marketPlaceJobFilter: Record<string, unknown> = {
     searchExpression_eq: search.terms.join(" "),
     experienceLevel_eq: filters.experienceLevel,
-    pagination_eq: cursor ? { first: PAGE_SIZE, after: cursor } : { first: PAGE_SIZE },
   };
 
   if (filters.clientHiresCount_gte > 0) {

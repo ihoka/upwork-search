@@ -9,7 +9,6 @@ Filter criteria for `marketplaceJobPostingsSearch`. Only the fields this project
 | `searchExpression_eq` | `String` | Generic search filter; supports partial Lucene syntax. This project joins `search.terms` with spaces and passes as-is (implicit AND). |
 | `experienceLevel_eq` | `ExperienceLevel` | `ENTRY_LEVEL` \| `INTERMEDIATE` \| `EXPERT`. |
 | `clientHiresRange_eq` | `IntRange` | `{ rangeStart, rangeEnd }`. Project uses `{ rangeStart: N }` to express "≥ N client hires". |
-| `pagination_eq` | `Pagination` | `{ first: Int!, after: String }`. Required for paging; `after` comes from `pageInfo.endCursor` of the previous page. |
 
 ## Fields we deliberately don't use
 
@@ -24,6 +23,12 @@ Filter criteria for `marketplaceJobPostingsSearch`. Only the fields this project
 | `verifiedPaymentOnly_eq`, `previousClients_eq`, `enterpriseOnly_eq`, `ptcIds_any`, `ptcOnly_eq` | Client-reputation / talent-cloud filters outside scope. |
 | `locations_any`, `timezone_eq`, `area_eq`, `userLocationMatch_eq`, `visitorCountry_eq` | Location filters; not needed. |
 | `preserveFacet_eq` | Pagination/faceting control; not needed. |
+
+## `pagination_eq` is broken server-side
+
+The schema declares `pagination_eq: Pagination` where `Pagination` is `{ first: Int!, after: String }`. Introspection confirms the shape. **However**, any request whose filter contains `pagination_eq` — even a minimal `{ first: 1 }` — causes Upwork's resolver to throw a generic `500 "Exception occurred"` error (reproducible via `bun run search:debug`, variants V1/V5/V12–V17). Omitting `pagination_eq` entirely (V4/V18/V19) works and returns a default page of ~10 `edges` with `hasNextPage: true` in `pageInfo`.
+
+Until Upwork fixes this, this project **does not send `pagination_eq`** and only consumes the server's default first page per search. The 6-hour cron cadence plus dedup across runs compensates for the reduced page size.
 
 ## No posted-within filter
 

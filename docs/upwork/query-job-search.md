@@ -49,13 +49,14 @@ query marketplaceJobPostingsSearch(
   "marketPlaceJobFilter": {
     "searchExpression_eq": "React TypeScript senior",
     "experienceLevel_eq": "EXPERT",
-    "clientHiresRange_eq": { "rangeStart": 1 },
-    "pagination_eq": { "first": 50 }
+    "clientHiresRange_eq": { "rangeStart": 1 }
   },
   "searchType": "USER_JOBS_SEARCH",
   "sortAttributes": [{ "field": "RECENCY" }]
 }
 ```
+
+> **Do not send `pagination_eq`.** Upwork's resolver currently throws `500 "Exception occurred"` for any request containing `pagination_eq`, regardless of the `first` value. See `filter-input.md` for the reproduction.
 
 ## Response shape (top level)
 
@@ -71,4 +72,4 @@ query marketplaceJobPostingsSearch(
 }
 ```
 
-Pagination uses `pagination_eq: { first: N, after: <endCursor> }` for subsequent pages.
+Pagination is nominally via `pagination_eq: { first: N, after: <endCursor> }`, but this field is broken server-side — see the warning above.

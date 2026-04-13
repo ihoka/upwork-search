@@ -75,20 +75,22 @@ describe("UpworkSearchClient", () => {
     expect(jobs[0].ciphertext).toBe("~01abc");
   });
 
-  test("fetchJobs paginates up to max 2 pages", async () => {
+  test("fetchJobs fetches only the first page (Upwork pagination_eq is broken)", async () => {
+    // Upwork's resolver crashes with 500 "Exception occurred" when
+    // pagination_eq is present, so we only issue a single request per search
+    // and accept the server's default page. hasNextPage=true from the server
+    // is intentionally ignored.
     const job1 = { ...sampleJob, id: "1", ciphertext: "~01" };
     const job2 = { ...sampleJob, id: "2", ciphertext: "~02" };
 
     let callCount = 0;
     globalThis.fetch = mock(() => {
       callCount++;
-      if (callCount === 1) {
-        return Promise.resolve(
-          new Response(JSON.stringify(makeApiResponse([job1], true, "cursor1")), { status: 200 }),
-        );
-      }
       return Promise.resolve(
-        new Response(JSON.stringify(makeApiResponse([job2], false)), { status: 200 }),
+        new Response(
+          JSON.stringify(makeApiResponse([job1, job2], true, "cursor1")),
+          { status: 200 },
+        ),
       );
     });
 
@@ -96,8 +98,8 @@ describe("UpworkSearchClient", () => {
     const search: SearchConfig = { terms: ["React"], category: "Web Development" };
     const jobs = await client.fetchJobs(search, baseFilters);
 
+    expect(callCount).toBe(1);
     expect(jobs).toHaveLength(2);
-    expect(callCount).toBe(2);
   });
 
   test("fetchJobs throws on API error", async () => {
@@ -122,27 +124,6 @@ describe("UpworkSearchClient", () => {
     const client = new UpworkSearchClient("https://api.example.com/graphql", "token-123");
     const search: SearchConfig = { terms: ["React"], category: "Web Development" };
     await expect(client.fetchJobs(search, baseFilters)).rejects.toThrow("GraphQL error");
-  });
-
-  test("fetchJobs stops at max 2 pages even when more available", async () => {
-    let callCount = 0;
-    globalThis.fetch = mock(() => {
-      callCount++;
-      const job = { ...sampleJob, id: String(callCount), ciphertext: `~0${callCount}` };
-      return Promise.resolve(
-        new Response(
-          JSON.stringify(makeApiResponse([job], true, `cursor${callCount}`)),
-          { status: 200 },
-        ),
-      );
-    });
-
-    const client = new UpworkSearchClient("https://api.example.com/graphql", "token-123");
-    const search: SearchConfig = { terms: ["React"], category: "Web Development" };
-    const jobs = await client.fetchJobs(search, baseFilters);
-
-    expect(callCount).toBe(2);
-    expect(jobs).toHaveLength(2);
   });
 
   test("filterJobs drops hourly jobs whose hourlyBudgetMax is below minimum", () => {

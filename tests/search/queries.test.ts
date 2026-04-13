@@ -20,7 +20,8 @@ test("buildQueryVariables produces real-schema filter inputs", () => {
   // MarketplaceJobPostingsSearchFilter, so it must not be sent to the API.
   expect(vars.marketPlaceJobFilter.daysPosted_eq).toBeUndefined();
   expect(vars.marketPlaceJobFilter.clientHiresRange_eq).toEqual({ rangeStart: 1 });
-  expect(vars.marketPlaceJobFilter.pagination_eq).toEqual({ first: 50 });
+  // pagination_eq crashes Upwork's resolver — must NOT be sent.
+  expect(vars.marketPlaceJobFilter.pagination_eq).toBeUndefined();
   expect(vars.searchType).toBe("USER_JOBS_SEARCH");
   expect(vars.sortAttributes).toEqual([{ field: "RECENCY" }]);
 
@@ -28,11 +29,6 @@ test("buildQueryVariables produces real-schema filter inputs", () => {
   expect(invalid.query).toBeUndefined();
   expect(invalid.occupations_category).toBeUndefined();
   expect(invalid.after).toBeUndefined();
-});
-
-test("buildQueryVariables threads cursor through pagination_eq.after", () => {
-  const vars = buildQueryVariables(search, filters, "CURSOR-123");
-  expect(vars.marketPlaceJobFilter.pagination_eq).toEqual({ first: 50, after: "CURSOR-123" });
 });
 
 test("buildQueryVariables omits clientHiresRange_eq when threshold is 0", () => {
