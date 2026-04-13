@@ -2,7 +2,16 @@ import { describe, test, expect, beforeEach, afterEach } from "bun:test";
 import { mkdtemp, rm } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
-import { loadSearchProfile } from "../../src/search/profile.ts";
+import { loadSearchProfile, parsePostedWithin } from "../../src/search/profile.ts";
+
+test("parsePostedWithin handles hours, days, weeks", () => {
+  expect(parsePostedWithin("24h")).toBe(1);
+  expect(parsePostedWithin("1h")).toBe(1);  // rounds up to minimum 1 day
+  expect(parsePostedWithin("3d")).toBe(3);
+  expect(parsePostedWithin("2w")).toBe(14);
+  expect(parsePostedWithin("")).toBe(1);    // default
+  expect(parsePostedWithin("bogus")).toBe(1);
+});
 
 describe("loadSearchProfile", () => {
   let tempDir: string;
