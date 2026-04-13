@@ -81,7 +81,7 @@ export interface PageInfo {
 
 export interface MarketplaceJobPostingsResponse {
   data: {
-    marketplaceJobPostings: {
+    marketplaceJobPostingsSearch: {
       totalCount: number;
       edges: JobPostingEdge[];
       pageInfo: PageInfo;

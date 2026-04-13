@@ -61,13 +61,13 @@ export class UpworkSearchClient {
         throw new Error(`Upwork GraphQL error: ${messages}`);
       }
 
-      if (!json.data?.marketplaceJobPostings) {
+      if (!json.data?.marketplaceJobPostingsSearch) {
         throw new Error(
           `Upwork API returned unexpected response: ${summarizeBody(JSON.stringify(json))}`,
         );
       }
 
-      const { edges, pageInfo } = json.data.marketplaceJobPostings;
+      const { edges, pageInfo } = json.data.marketplaceJobPostingsSearch;
 
       for (const edge of edges) {
         allJobs.push(edge.node);
@@ -82,20 +82,12 @@ export class UpworkSearchClient {
 
   filterJobs(jobs: UpworkJobPosting[], filters: SearchFilters): UpworkJobPosting[] {
     return jobs.filter((job) => {
-      // Budget check: skip if hourly max is below minimum threshold
-      if (job.hourlyBudgetMax != null && job.hourlyBudgetMax < filters.hourlyBudgetMin) {
-        return false;
+      // Only hourly jobs have an hourly budget. Fixed-price jobs pass through.
+      const rawMax = job.hourlyBudgetMax?.rawValue;
+      if (rawMax != null) {
+        const max = Number(rawMax);
+        if (Number.isFinite(max) && max < filters.hourlyBudgetMin) return false;
       }
-
-      // Client hires check
-      if (
-        filters.clientHiresCount_gte > 0 &&
-        job.client != null &&
-        (job.client.totalHires ?? 0) < filters.clientHiresCount_gte
-      ) {
-        return false;
-      }
-
       return true;
     });
   }
