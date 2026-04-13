@@ -20,6 +20,10 @@
     <dict>
         <key>PATH</key>
         <string>/Users/ihoka/.bun/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>CLAUDE_BIN</key>
+        <string>/usr/local/bin/claude</string>
+        <key>UPWORK_TRIAGE_PROFILE</key>
+        <string>/Users/ihoka/ihoka/upwork-search/triage-profile.yaml</string>
     </dict>
     <key>RunAtLoad</key>
     <true/>

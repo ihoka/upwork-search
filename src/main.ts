@@ -6,6 +6,7 @@ import { UpworkSearchClient } from "./search/client.ts";
 import { loadSearchProfile } from "./search/profile.ts";
 import { DeduplicationState } from "./dedup/state.ts";
 import { jobToMarkdown, sanitizeFilename } from "./transform/markdown.ts";
+import { runSkill } from "./triage/runner.ts";
 import type { UpworkJobPosting } from "./types.ts";
 
 export interface RunOptions {
@@ -106,6 +107,23 @@ if (isMainModule) {
       `Done. Fetched: ${result.totalFetched}, Saved: ${result.saved}, ` +
         `Duplicates: ${result.skippedDuplicates}, Filtered: ${result.skippedFiltered}`,
     );
+
+    if (config.triageEnabled && result.saved > 0) {
+      console.log(`Triaging ${result.saved} new job(s)...`);
+
+      for (const skill of ["upwork-evaluate", "upwork-propose"] as const) {
+        const r = await runSkill({
+          skill,
+          jobsDir: config.outputDir,
+          profilePath: config.triageProfilePath,
+          claudeBin: config.claudeBin,
+          timeoutMs: config.triageTimeoutMs,
+        });
+        if (r.timedOut) console.error(`${skill} timed out after ${r.durationMs}ms`);
+        else if (r.exitCode !== 0) console.error(`${skill} exited with code ${r.exitCode}`);
+        else console.log(`${skill} completed in ${r.durationMs}ms`);
+      }
+    }
   } catch (error) {
     console.error("Search cycle failed:", error);
     process.exit(1);

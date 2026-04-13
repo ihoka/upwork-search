@@ -5,3 +5,4 @@ data/tokens.json
 data/seen-jobs.json
 .env
 logs/
+triage-profile.yaml

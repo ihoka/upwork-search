@@ -1,0 +1,54 @@
+# Triage Profile — Template
+#
+# Copy this file to triage-profile.yaml and fill in your details.
+# The upwork-triage skill reads this to personalise scoring, auto-rules,
+# and proposal drafting. See .claude/skills/upwork-triage/SKILL.md for
+# the resolution order.
+
+identity:
+  name: Jane Developer                    # Your name as it appears on Upwork
+  title: senior full-stack engineer        # How you describe your role
+  experience_years: 10                     # Years of professional experience
+
+rate:
+  hourly: 100                              # Your standard hourly rate
+  currency: USD                            # Currency code
+  min_acceptable: 50                       # Auto-skip if job's max rate is below this
+
+stack:
+  core: [React, Node.js, TypeScript]       # Daily-use tech — scores 9-10 on Tech Stack Match
+  adjacent: [Python, PostgreSQL, AWS]      # Familiar tech — scores 7-8
+  transferable: [Vue, Go]                  # Can pick up quickly — scores 3-4
+  avoid: [Java, .NET, PHP, C++]            # Auto-skip if tech stack overlaps ONLY with these
+
+boosts:
+  - keywords: [billing, invoicing, payment, e-commerce]
+    points: 10                             # Added to final score when job matches these keywords
+  - keywords: [AI, ML, LLM, GenAI]
+    points: 5
+
+verdict_thresholds:
+  apply: 70                                # Score >= this → verdict "apply" (draft proposal)
+  maybe: 40                                # Score >= this → verdict "maybe" (no proposal)
+                                           # Score < maybe → verdict "skip"
+
+cv_highlights:
+  - domain: Billing & Payments
+    bullets:
+      - "Example Corp — built subscription billing engine from scratch, 4 years"
+      - "Example Inc — fixed precision errors saving $500k/year"
+  - domain: E-Commerce
+    bullets:
+      - "Example Marketplace — payment systems and stock management redesign"
+  - domain: API Development
+    bullets:
+      - "Example API Co — RESTful API serving 10M requests/day"
+
+proposal:
+  length_words: [150, 250]                 # Target word count range for cover letter
+  voice: "direct, professional, subtly authoritative"
+
+paths:
+  # Where the upwork-search service writes job markdown files.
+  # The skill globs *.md here to find jobs with status: new.
+  jobs_dir: /path/to/Upwork/Jobs
