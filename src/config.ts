@@ -29,6 +29,6 @@ export function getConfig(): AppConfig {
     tokensPath: join(PROJECT_ROOT, "data/tokens.json"),
     seenJobsPath: join(PROJECT_ROOT, "data/seen-jobs.json"),
     searchProfilePath: join(PROJECT_ROOT, "search-profile.yaml"),
-    apiBaseUrl: "https://www.upwork.com/api/graphql",
+    apiBaseUrl: "https://api.upwork.com/graphql",
   };
 }
