@@ -25,7 +25,7 @@ bun run setup        # One-time OAuth2 setup (opens browser)
 
 **Key modules (`src/`):**
 - `auth/` — OAuth2 token acquisition, refresh, and storage (`data/tokens.json`). Tokens refresh automatically when within 5-min expiry buffer.
-- `search/` — GraphQL client hitting Upwork's `marketplaceJobPostings` query. Search criteria loaded from `search-profile.yaml`. Paginates max 2 pages per search.
+- `search/` — GraphQL client hitting Upwork's `marketplaceJobPostingsSearch` query. Search criteria loaded from `search-profile.yaml`. Paginates max 2 pages per search.
 - `transform/` — Converts API responses to markdown with YAML frontmatter (`source: upwork-api` distinguishes these from web-clipped files).
 - `dedup/` — JSON state file (`data/seen-jobs.json`) mapping job IDs to timestamps. Prunes entries older than 30 days. Uses atomic writes (temp file + rename).
 - `config.ts` — Env vars and path constants.

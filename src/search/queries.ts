@@ -1,11 +1,15 @@
 import type { SearchConfig, SearchFilters } from "../types.ts";
 
 export const SEARCH_JOBS_QUERY = `
-query searchJobs($filter: MarketplaceJobFilter, $sort: [MarketplaceJobPostingSearchSortAttribute]) {
-  marketplaceJobPostings(
-    marketPlaceJobFilter: $filter
-    searchType: USER_JOBS_SEARCH
-    sortAttributes: $sort
+query searchJobs(
+  $marketPlaceJobFilter: MarketplaceJobPostingsSearchFilter,
+  $searchType: MarketplaceJobPostingSearchType,
+  $sortAttributes: [MarketplaceJobPostingSearchSortAttribute]
+) {
+  marketplaceJobPostingsSearch(
+    marketPlaceJobFilter: $marketPlaceJobFilter
+    searchType: $searchType
+    sortAttributes: $sortAttributes
   ) {
     totalCount
     edges {
@@ -15,20 +19,22 @@ query searchJobs($filter: MarketplaceJobFilter, $sort: [MarketplaceJobPostingSea
         title
         description
         publishedDateTime
-        hourlyBudgetMin
-        hourlyBudgetMax
-        budget { amount }
         experienceLevel
         duration
-        workload
-        skills { name }
+        engagement
+        amount { rawValue currency displayValue }
+        hourlyBudgetMin { rawValue currency displayValue }
+        hourlyBudgetMax { rawValue currency displayValue }
+        skills { name prettyName }
         client {
           totalHires
-          totalSpent
           totalReviews
+          totalSpent { rawValue currency displayValue }
           location { country }
         }
-        occupations { category }
+        occupations {
+          category { id prefLabel }
+        }
       }
     }
     pageInfo { hasNextPage endCursor }
@@ -37,27 +43,32 @@ query searchJobs($filter: MarketplaceJobFilter, $sort: [MarketplaceJobPostingSea
 `;
 
 export interface QueryVariables {
-  filter: Record<string, unknown>;
-  sort: { field: string; sortOrder: string }[];
+  marketPlaceJobFilter: Record<string, unknown>;
+  searchType: "USER_JOBS_SEARCH";
+  sortAttributes: { field: "RECENCY" | "RELEVANCE" | "CLIENT_TOTAL_CHARGE" | "CLIENT_RATING" }[];
 }
+
+const PAGE_SIZE = 50;
 
 export function buildQueryVariables(
   search: SearchConfig,
   filters: SearchFilters,
   cursor?: string,
 ): QueryVariables {
-  const filter: Record<string, unknown> = {
-    query: search.terms.join(" "),
-    occupations_category: search.category,
-    experienceLevel: filters.experienceLevel,
+  const marketPlaceJobFilter: Record<string, unknown> = {
+    searchExpression_eq: search.terms.join(" "),
+    experienceLevel_eq: filters.experienceLevel,
+    daysPosted_eq: filters.daysPosted,
+    pagination_eq: cursor ? { first: PAGE_SIZE, after: cursor } : { first: PAGE_SIZE },
   };
 
-  if (cursor) {
-    filter.after = cursor;
+  if (filters.clientHiresCount_gte > 0) {
+    marketPlaceJobFilter.clientHiresRange_eq = { rangeStart: filters.clientHiresCount_gte };
   }
 
   return {
-    filter,
-    sort: [{ field: "RECENCY", sortOrder: "DESC" }],
+    marketPlaceJobFilter,
+    searchType: "USER_JOBS_SEARCH",
+    sortAttributes: [{ field: "RECENCY" }],
   };
 }

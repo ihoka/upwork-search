@@ -12,11 +12,12 @@ export interface SearchConfig {
 }
 
 export interface SearchFilters {
-  experienceLevel: string;
+  experienceLevel: "ENTRY_LEVEL" | "INTERMEDIATE" | "EXPERT";
   hourlyBudgetMin: number;
-  jobType: string[];
+  jobType: string[];         // retained for documentation; unused at runtime
   clientHiresCount_gte: number;
-  postedWithin: string;
+  postedWithin: string;      // raw YAML value, e.g. "24h"
+  daysPosted: number;        // derived; min 1
 }
 
 export interface SearchProfile {
@@ -25,11 +26,31 @@ export interface SearchProfile {
 }
 
 // Upwork GraphQL API response types
-export interface UpworkClient {
-  totalHires: number | null;
-  totalSpent: number | null;
-  totalReviews: number | null;
-  location: { country: string } | null;
+export interface Money {
+  rawValue: string;    // numeric as string, e.g. "60"
+  currency: string;    // e.g. "USD"
+  displayValue: string; // e.g. "$60.00"
+}
+
+export interface UpworkJobPostingClient {
+  totalHires: number;
+  totalReviews: number;
+  totalSpent: Money | null;
+  location: { country: string | null } | null;
+}
+
+export interface UpworkJobPostingOccupation {
+  id: string;
+  prefLabel: string;
+}
+
+export interface UpworkJobPostingOccupations {
+  category: UpworkJobPostingOccupation | null;
+}
+
+export interface UpworkJobPostingSkill {
+  name: string;
+  prettyName: string;
 }
 
 export interface UpworkJobPosting {
@@ -38,15 +59,15 @@ export interface UpworkJobPosting {
   title: string;
   description: string;
   publishedDateTime: string;
-  hourlyBudgetMin: number | null;
-  hourlyBudgetMax: number | null;
-  budget: { amount: number } | null;
-  experienceLevel: string | null;
-  duration: string | null;
-  workload: string | null;
-  skills: { name: string }[];
-  client: UpworkClient | null;
-  occupations: { category: string }[] | null;
+  experienceLevel: "ENTRY_LEVEL" | "INTERMEDIATE" | "EXPERT" | "NONE";
+  duration: "WEEK" | "MONTH" | "QUARTER" | "SEMESTER" | "ONGOING" | null;
+  engagement: string | null;
+  amount: Money;
+  hourlyBudgetMin: Money | null;
+  hourlyBudgetMax: Money | null;
+  skills: UpworkJobPostingSkill[];
+  client: UpworkJobPostingClient;
+  occupations: UpworkJobPostingOccupations | null;
 }
 
 export interface JobPostingEdge {
@@ -60,7 +81,7 @@ export interface PageInfo {
 
 export interface MarketplaceJobPostingsResponse {
   data: {
-    marketplaceJobPostings: {
+    marketplaceJobPostingsSearch: {
       totalCount: number;
       edges: JobPostingEdge[];
       pageInfo: PageInfo;

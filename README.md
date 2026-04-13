@@ -51,6 +51,19 @@ UPWORK_REDIRECT_URI=http://localhost:3000/callback
 OUTPUT_DIR=~/Documents/Obsidian/Personal/+Inbox/Upwork
 ```
 
+### Required API key scopes
+
+Scopes on Upwork are configured **on the API key**, not requested in the authorize URL. If `bun run search` reports an error like:
+
+> The client or authentication token doesn't have enough oauth2 permissions/scopes to access: [Money.currency, ...]
+
+open the [Upwork API Center](https://www.upwork.com/developer/keys/), edit your key, and enable these scopes:
+
+- **Common Entities - Read-Only Access** (required for all Upwork API calls)
+- **Read marketplace Job Postings** (required for `marketplaceJobPostingsSearch` and its `Money` / `PageInfo` / nested fields)
+
+After changing scopes, existing access tokens are invalidated — re-run `bun run setup` to obtain new ones. See [`docs/upwork/authentication-and-scopes.md`](docs/upwork/authentication-and-scopes.md) for more detail.
+
 ### `search-profile.yaml`
 
 Define your search criteria — keywords, categories, and filters:

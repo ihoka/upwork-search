@@ -2,7 +2,16 @@ import { describe, test, expect, beforeEach, afterEach } from "bun:test";
 import { mkdtemp, rm } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
-import { loadSearchProfile } from "../../src/search/profile.ts";
+import { loadSearchProfile, parsePostedWithin } from "../../src/search/profile.ts";
+
+test("parsePostedWithin handles hours, days, weeks", () => {
+  expect(parsePostedWithin("24h")).toBe(1);
+  expect(parsePostedWithin("1h")).toBe(1);  // rounds up to minimum 1 day
+  expect(parsePostedWithin("3d")).toBe(3);
+  expect(parsePostedWithin("2w")).toBe(14);
+  expect(parsePostedWithin("")).toBe(1);    // default
+  expect(parsePostedWithin("bogus")).toBe(1);
+});
 
 describe("loadSearchProfile", () => {
   let tempDir: string;
@@ -43,6 +52,7 @@ filters:
     expect(profile.filters.jobType).toEqual(["HOURLY", "FIXED"]);
     expect(profile.filters.clientHiresCount_gte).toBe(1);
     expect(profile.filters.postedWithin).toBe("24h");
+    expect(profile.filters.daysPosted).toBe(1);
   });
 
   test("throws when file does not exist", async () => {
