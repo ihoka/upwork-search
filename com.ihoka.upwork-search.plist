@@ -6,7 +6,7 @@
     <string>com.ihoka.upwork-search</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/ihoka/.bun/bin/bun</string>
+        <string>/Users/ihoka/.local/share/mise/shims/bun</string>
         <string>run</string>
         <string>/Users/ihoka/ihoka/upwork-search/src/main.ts</string>
     </array>
@@ -19,7 +19,7 @@
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
-        <string>/Users/ihoka/.bun/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <string>/Users/ihoka/.local/share/mise/shims:/usr/local/bin:/usr/bin:/bin</string>
         <key>CLAUDE_BIN</key>
         <string>/usr/local/bin/claude</string>
         <key>UPWORK_TRIAGE_PROFILE</key>
