@@ -89,6 +89,12 @@ export async function runSearchCycle(options: RunOptions): Promise<RunResult> {
 // CLI entry point — only runs when executed directly
 const isMainModule = import.meta.main;
 if (isMainModule) {
+  const origLog = console.log.bind(console);
+  const origError = console.error.bind(console);
+  const stamp = () => new Date().toISOString();
+  console.log = (...args: unknown[]) => origLog(`[${stamp()}]`, ...args);
+  console.error = (...args: unknown[]) => origError(`[${stamp()}]`, ...args);
+
   try {
     const config = getConfig();
     const tokenManager = new TokenManager(config.tokensPath, config.clientId, config.clientSecret);
