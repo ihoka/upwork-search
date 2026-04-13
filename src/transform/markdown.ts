@@ -1,9 +1,5 @@
 import type { UpworkJobPosting } from "../types.ts";
 
-function formatCurrency(amount: number): string {
-  return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
 export function jobToMarkdown(job: UpworkJobPosting): string {
   const today = new Date().toISOString().split("T")[0];
   const url = `https://www.upwork.com/jobs/${job.ciphertext}`;
@@ -13,13 +9,13 @@ export function jobToMarkdown(job: UpworkJobPosting): string {
   let budgetLine: string;
   let budgetLabel: string;
   if (job.hourlyBudgetMin != null || job.hourlyBudgetMax != null) {
-    const min = job.hourlyBudgetMin ?? 0;
-    const max = job.hourlyBudgetMax ?? 0;
-    budgetLine = `${formatCurrency(min)} - ${formatCurrency(max)}`;
-    budgetLabel = "Hourly";
-  } else if (job.budget?.amount != null) {
-    budgetLine = formatCurrency(job.budget.amount);
-    budgetLabel = "Fixed";
+    const min = job.hourlyBudgetMin?.displayValue ?? "$0.00";
+    const max = job.hourlyBudgetMax?.displayValue ?? "$0.00";
+    budgetLine = `Hourly: ${min} – ${max}`;
+    budgetLabel = "Budget";
+  } else if (job.amount != null && job.amount.rawValue !== "0") {
+    budgetLine = `Fixed: ${job.amount.displayValue}`;
+    budgetLabel = "Budget";
   } else {
     budgetLine = "not available";
     budgetLabel = "Budget";
@@ -27,10 +23,11 @@ export function jobToMarkdown(job: UpworkJobPosting): string {
 
   // Client history
   const clientHires = job.client?.totalHires != null ? String(job.client.totalHires) : "not available";
-  const clientSpent = job.client?.totalSpent != null ? formatCurrency(job.client.totalSpent) : "not available";
+  const clientSpent = job.client?.totalSpent?.displayValue ?? "not available";
   const clientReviews = job.client?.totalReviews != null ? String(job.client.totalReviews) : "not available";
   const clientLocation = job.client?.location?.country ?? "not available";
 
+  const category = job.occupations?.category?.prefLabel ?? "not available";
   const skills = job.skills.map((s) => s.name).join(", ");
 
   return `---
@@ -50,8 +47,8 @@ upwork_url: "${url}"
 
 ${job.description}
 
-- **${job.workload ?? "not available"}**
-    Workload
+- **${job.engagement ?? "not available"}**
+    Engagement
 - **${job.duration ?? "not available"}**
     Duration
 - **${job.experienceLevel ?? "not available"}**
@@ -62,10 +59,11 @@ ${job.description}
 **Skills:** ${skills || "not available"}
 
 **Client History**
-- Total hires: ${clientHires}
-- Total spent: ${clientSpent}
+- Client hires: ${clientHires}
+- Client spent: ${clientSpent}
 - Total reviews: ${clientReviews}
 - Location: ${clientLocation}
+- Category: ${category}
 
 ##### Activity on this job
 
