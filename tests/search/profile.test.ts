@@ -52,6 +52,7 @@ filters:
     expect(profile.filters.jobType).toEqual(["HOURLY", "FIXED"]);
     expect(profile.filters.clientHiresCount_gte).toBe(1);
     expect(profile.filters.postedWithin).toBe("24h");
+    expect(profile.filters.daysPosted).toBe(1);
   });
 
   test("throws when file does not exist", async () => {
