@@ -63,8 +63,8 @@ Read the full file content. Determine the source by checking for `source: upwork
 - Client history (aggregates for API; past projects + feedback for web-clipped)
 - Proposal count, interviewing count, bid range (web-clipped only -- not present in API files)
 
-#### 4b. Check Auto-Rules
-Apply auto-rules FIRST:
+#### 4b. Check Pre-Scoring Auto-Rules
+Apply pre-scoring auto-rules FIRST:
 - If client's maximum offered rate < `profile.rate.min_acceptable` -> auto-skip
 - If tech stack has zero overlap with the union of `profile.stack.core`, `profile.stack.adjacent`, and `profile.stack.transferable` -> auto-skip
 
@@ -80,12 +80,15 @@ final_score = (sum of dimension_score x weight_as_decimal) x 10 + boosts
 
 Apply boosts from `profile.boosts`: for each entry, if the job description mentions any keyword in that entry's `keywords` list, add that entry's `points`. Sum all matching boosts. Cap final score at 100.
 
-#### 4e. Determine Verdict
+#### 4e. Apply Score Cap (Disqualifying Requirements)
+After calculating the final score (including boosts), apply the **Score cap (disqualifying requirements)** rule from the rubric. Scan the job description for explicitly stated hard requirements, check each against the freelancer's profile, and cap the score at `profile.verdict_thresholds.apply - 1` if any requirement is unmet. See the rubric's post-scoring auto-rules for full details.
+
+#### 4f. Determine Verdict
 - `profile.verdict_thresholds.apply` to 100 -> **apply** (default threshold: 70)
 - `profile.verdict_thresholds.maybe` to apply-1 -> **maybe** (default threshold: 40)
 - 0 to maybe-1 -> **skip**
 
-#### 4f. Edit the File
+#### 4g. Edit the File
 
 **Frontmatter:** If the file already has YAML frontmatter (starts with `---`), merge the `upwork_` fields into the existing frontmatter. If no frontmatter exists, prepend a new block.
 
@@ -106,7 +109,7 @@ upwork_reasoning:
 
 **IMPORTANT:** Do not modify the original posting content below the frontmatter. It must remain exactly as clipped.
 
-#### 4g. Update Status
+#### 4h. Update Status
 
 After editing the file, set `status` in frontmatter based on verdict:
 

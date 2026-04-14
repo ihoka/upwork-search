@@ -134,11 +134,17 @@ Boosts are added after the weighted calculation.
 
 ## Auto-Rules
 
-Apply these BEFORE normal scoring:
+Rules are applied at two stages:
+
+**Pre-scoring (apply BEFORE normal scoring):**
 
 - **Auto-skip (low rate):** Client's maximum offered rate is below `profile.rate.min_acceptable` (the upper bound of their stated range). Score as 0, verdict "skip", reason: "Max rate below minimum acceptable threshold."
 - **Auto-skip (no stack overlap):** Tech stack is entirely outside the union of `profile.stack.core`, `profile.stack.adjacent`, and `profile.stack.transferable` -- zero overlap. If the only overlap is with `profile.stack.avoid`, that still counts as zero overlap. Score as 0, verdict "skip", reason: "No tech stack overlap."
+
+**Post-scoring (apply AFTER weighted scoring and boosts, BEFORE verdict):**
+
 - **Boosts:** Apply each entry in `profile.boosts`. For each entry, if the job description mentions any keyword in that entry's `keywords` list, add the entry's `points` to the final score. Sum all matching boosts. Cap final score at 100.
+- **Score cap (disqualifying requirements):** After scoring, scan the job description for **explicitly stated hard requirements** -- look for sections like "ideal candidate has", "must have", "required experience", "you should have", "looking for someone with", or equivalent phrasing that signals non-negotiable qualifications. For each hard requirement found, check whether the freelancer's profile covers it by matching against `profile.stack.core`, `profile.stack.adjacent`, `profile.stack.transferable`, and the domains and bullets in `profile.cv_highlights`. If one or more hard requirements fall entirely outside the freelancer's profile, cap the final score at `profile.verdict_thresholds.apply - 1` (just below the apply threshold, forcing a "maybe" at best). Add a reasoning line for each unmet requirement: `"Score capped: job requires [requirement] which is outside profile expertise."`
 
 ## Verdict Thresholds
 
