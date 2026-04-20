@@ -21,9 +21,12 @@ Returned as `edges[].node` from `marketplaceJobPostingsSearch`. Source: `docs/Up
 | `client` | `MarketplaceJobPostingSearchClientInfo!` | See below. |
 | `occupations` | `MarketplaceJobPostingSearchOccupations` | Nullable. Subselect `category { id prefLabel }`. |
 
+| `totalApplicants` | `Int` | Nullable. Number of proposals submitted. Used by maintenance module for competition-based score decay. |
+| `applied` | `Boolean` | Nullable. Whether the authenticated freelancer has applied. Used by maintenance module for status cross-referencing. |
+
 ## Fields we don't use (selection)
 
-`hourlyBudgetType`, `weeklyBudget`, `engagementDuration`, `freelancersToHire`, `totalApplicants`, `premium`, `enterprise`, `relevance`, `relevanceEncoded`, `preferredFreelancerLocation`, `applied`, `freelancerClientRelation`, `recordNumber`, `category` (the deprecated String field), `subcategory`, `durationLabel`.
+`hourlyBudgetType`, `weeklyBudget`, `engagementDuration`, `freelancersToHire`, `premium`, `enterprise`, `relevance`, `relevanceEncoded`, `preferredFreelancerLocation`, `freelancerClientRelation`, `recordNumber`, `category` (the deprecated String field), `subcategory`, `durationLabel`.
 
 ## `Money`
 

@@ -68,6 +68,8 @@ export interface UpworkJobPosting {
   skills: UpworkJobPostingSkill[];
   client: UpworkJobPostingClient;
   occupations: UpworkJobPostingOccupations | null;
+  totalApplicants: number | null;
+  applied: boolean | null;
 }
 
 export interface JobPostingEdge {

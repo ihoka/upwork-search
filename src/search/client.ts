@@ -1,4 +1,4 @@
-import { SEARCH_JOBS_QUERY, buildQueryVariables } from "./queries.ts";
+import { SEARCH_JOBS_QUERY, buildQueryVariables, buildJobCheckVariables } from "./queries.ts";
 import type {
   UpworkJobPosting,
   SearchConfig,
@@ -86,6 +86,38 @@ export class UpworkSearchClient {
 
     const { edges } = json.data.marketplaceJobPostingsSearch;
     return edges.map((edge: { node: UpworkJobPosting }) => edge.node);
+  }
+
+  async checkJob(ciphertext: string): Promise<UpworkJobPosting | null> {
+    const variables = buildJobCheckVariables(ciphertext);
+    const response = await fetch(this.apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.accessToken}`,
+      },
+      body: JSON.stringify({ query: SEARCH_JOBS_QUERY, variables }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Upwork API error (${response.status}): ${summarizeBody(text)}`);
+    }
+
+    const json = await response.json();
+
+    if (json.errors?.length) {
+      if (process.env.DEBUG === "1") {
+        console.error("[upwork] checkJob error:", JSON.stringify(json.errors));
+      }
+      throw new Error(`Upwork GraphQL error checking job ${ciphertext}`);
+    }
+
+    const edges = json.data?.marketplaceJobPostingsSearch?.edges ?? [];
+    const match = edges.find(
+      (edge: { node: UpworkJobPosting }) => edge.node.ciphertext === ciphertext,
+    );
+    return match?.node ?? null;
   }
 
   filterJobs(jobs: UpworkJobPosting[], filters: SearchFilters): UpworkJobPosting[] {

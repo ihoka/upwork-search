@@ -22,6 +22,8 @@ const sampleJob: UpworkJobPosting = {
     location: { country: "United States" },
   },
   occupations: { category: { id: "531770282580668419", prefLabel: "Web Development" } },
+  totalApplicants: null,
+  applied: null,
 };
 
 describe("jobToMarkdown", () => {

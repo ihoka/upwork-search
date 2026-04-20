@@ -14,6 +14,7 @@ export interface AppConfig {
   triageProfilePath: string;
   claudeBin: string;
   triageTimeoutMs: number;
+  maintenanceEnabled: boolean;
 }
 
 const PROJECT_ROOT = resolve(import.meta.dir, "..");
@@ -49,5 +50,6 @@ export function getConfig(): AppConfig {
     triageProfilePath,
     claudeBin: process.env.CLAUDE_BIN || "claude",
     triageTimeoutMs: Number(process.env.TRIAGE_TIMEOUT_MS) || 600_000,
+    maintenanceEnabled: process.env.MAINTENANCE_ENABLED !== "false",
   };
 }

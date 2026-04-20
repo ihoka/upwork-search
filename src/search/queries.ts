@@ -32,6 +32,8 @@ query searchJobs(
           totalSpent { rawValue currency displayValue }
           location { country }
         }
+        totalApplicants
+        applied
         occupations {
           category { id prefLabel }
         }
@@ -46,6 +48,16 @@ export interface QueryVariables {
   marketPlaceJobFilter: Record<string, unknown>;
   searchType: "USER_JOBS_SEARCH";
   sortAttributes: { field: "RECENCY" | "RELEVANCE" | "CLIENT_TOTAL_CHARGE" | "CLIENT_RATING" }[];
+}
+
+export function buildJobCheckVariables(ciphertext: string): QueryVariables {
+  return {
+    marketPlaceJobFilter: {
+      searchExpression_eq: ciphertext,
+    },
+    searchType: "USER_JOBS_SEARCH",
+    sortAttributes: [{ field: "RECENCY" }],
+  };
 }
 
 export function buildQueryVariables(

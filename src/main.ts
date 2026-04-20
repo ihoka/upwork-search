@@ -7,6 +7,7 @@ import { loadSearchProfile } from "./search/profile.ts";
 import { DeduplicationState } from "./dedup/state.ts";
 import { jobToMarkdown, sanitizeFilename } from "./transform/markdown.ts";
 import { runSkill } from "./triage/runner.ts";
+import { runMaintenance } from "./maintenance/index.ts";
 import type { UpworkJobPosting } from "./types.ts";
 
 export interface RunOptions {
@@ -113,6 +114,19 @@ if (isMainModule) {
       `Done. Fetched: ${result.totalFetched}, Saved: ${result.saved}, ` +
         `Duplicates: ${result.skippedDuplicates}, Filtered: ${result.skippedFiltered}`,
     );
+
+    if (config.maintenanceEnabled) {
+      console.log("Running job maintenance...");
+      const client = new UpworkSearchClient(config.apiBaseUrl, accessToken);
+      const mResult = await runMaintenance({
+        client,
+        jobsDir: config.outputDir,
+      });
+      console.log(
+        `Maintenance done. Closed: ${mResult.closed.length}, Expired: ${mResult.expired.length}, ` +
+          `Decayed: ${mResult.decayed.length}, Unchanged: ${mResult.unchanged.length}`,
+      );
+    }
 
     if (config.triageEnabled && result.saved > 0) {
       console.log(`Triaging ${result.saved} new job(s)...`);

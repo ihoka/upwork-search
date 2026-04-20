@@ -25,6 +25,8 @@ function makeJobNode(overrides: Partial<UpworkJobPosting> = {}): UpworkJobPostin
       location: { country: "United States" },
     },
     occupations: { category: { id: "531770282580668419", prefLabel: "Web Development" } },
+    totalApplicants: null,
+    applied: null,
     ...overrides,
   };
 }

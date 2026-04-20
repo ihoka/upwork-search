@@ -12,7 +12,7 @@ const sampleJob: UpworkJobPosting = {
   ciphertext: "~01abc",
   title: "Senior React Dev",
   description: "Build stuff",
-  publishedDateTime: "2026-04-13T10:00:00Z",
+  publishedDateTime: new Date().toISOString(),
   experienceLevel: "EXPERT",
   duration: "MONTH",
   engagement: "30+ hrs/week",
@@ -27,6 +27,8 @@ const sampleJob: UpworkJobPosting = {
     location: { country: "United States" },
   },
   occupations: { category: { id: "531770282580668419", prefLabel: "Web Development" } },
+  totalApplicants: null,
+  applied: null,
 };
 
 function makeApiResponse(

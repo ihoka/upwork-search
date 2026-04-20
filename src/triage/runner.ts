@@ -1,4 +1,4 @@
-export type SkillName = "upwork-evaluate" | "upwork-propose";
+export type SkillName = "upwork-evaluate" | "upwork-propose" | "upwork-maintain";
 
 export interface RunSkillOptions {
   skill: SkillName;
@@ -33,6 +33,13 @@ const SKILL_PROMPTS: Record<SkillName, (profilePath: string, jobsDir: string) =>
       `Use the triage profile at ${profilePath}.`,
       `Draft proposals for job files in ${jobsDir} where \`upwork_verdict: apply\` and no draft proposal exists yet.`,
       "When done, print a concise summary.",
+    ].join(" "),
+  "upwork-maintain": (profilePath, jobsDir) =>
+    [
+      "Run the /upwork-maintain skill.",
+      `Use the triage profile at ${profilePath}.`,
+      `Maintain job files in ${jobsDir}: expire triaged jobs older than 14 days, and apply time-decay scoring to recent triaged jobs.`,
+      "When done, print a concise summary table.",
     ].join(" "),
 };
 
