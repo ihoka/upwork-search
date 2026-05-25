@@ -32,6 +32,7 @@ export function jobToMarkdown(job: UpworkJobPosting): string {
 
   return `---
 source: upwork-api
+status: new
 upwork_job_id: "${job.ciphertext}"
 upwork_fetched: ${today}
 upwork_url: "${url}"
